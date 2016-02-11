@@ -1,0 +1,338 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3CCEBF8C1C6CB0D70086A0C5 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 3CCEBF8B1C6CB0D70086A0C5 /* main.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		3CCEBF871C6CB0D70086A0C5 /* Index */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Index; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CCEBF8B1C6CB0D70086A0C5 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		3CCEBF8E1C6CB0D70086A0C5 /* Makefile */ = {isa = PBXFileReference; path = Makefile; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		3CCEBF7A1C6CB0D60086A0C5 = {
+			isa = PBXGroup;
+			children = (
+				3CCEBF8A1C6CB0D70086A0C5 /* ADC_SERIAL_PrintOutSensorValue */,
+				3CCEBF881C6CB0D70086A0C5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3CCEBF881C6CB0D70086A0C5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3CCEBF871C6CB0D70086A0C5 /* Index */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3CCEBF8A1C6CB0D70086A0C5 /* ADC_SERIAL_PrintOutSensorValue */ = {
+			isa = PBXGroup;
+			children = (
+				3CCEBF8B1C6CB0D70086A0C5 /* main.c */,
+				3CCEBF8D1C6CB0D70086A0C5 /* Makefiles */,
+			);
+			path = ADC_SERIAL_PrintOutSensorValue;
+			sourceTree = "<group>";
+		};
+		3CCEBF8D1C6CB0D70086A0C5 /* Makefiles */ = {
+			isa = PBXGroup;
+			children = (
+				3CCEBF8E1C6CB0D70086A0C5 /* Makefile */,
+			);
+			name = Makefiles;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		3CCEBF811C6CB0D70086A0C5 /* All */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "all -C \"$(PROJECT)\"";
+			buildConfigurationList = 3CCEBF911C6CB0D70086A0C5 /* Build configuration list for PBXLegacyTarget "All" */;
+			buildPhases = (
+			);
+			buildToolPath = make;
+			dependencies = (
+			);
+			name = All;
+			passBuildSettingsInEnvironment = 1;
+			productName = All;
+		};
+		3CCEBF821C6CB0D70086A0C5 /* Build */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "build -C \"$(PROJECT)\"";
+			buildConfigurationList = 3CCEBF941C6CB0D70086A0C5 /* Build configuration list for PBXLegacyTarget "Build" */;
+			buildPhases = (
+			);
+			buildToolPath = make;
+			dependencies = (
+			);
+			name = Build;
+			passBuildSettingsInEnvironment = 1;
+			productName = Build;
+		};
+		3CCEBF831C6CB0D70086A0C5 /* Upload */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "program -C \"$(PROJECT)\"";
+			buildConfigurationList = 3CCEBF971C6CB0D70086A0C5 /* Build configuration list for PBXLegacyTarget "Upload" */;
+			buildPhases = (
+			);
+			buildToolPath = make;
+			dependencies = (
+			);
+			name = Upload;
+			passBuildSettingsInEnvironment = 1;
+			productName = Upload;
+		};
+		3CCEBF841C6CB0D70086A0C5 /* Clean */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "clean -C \"$(PROJECT)\"";
+			buildConfigurationList = 3CCEBF9A1C6CB0D70086A0C5 /* Build configuration list for PBXLegacyTarget "Clean" */;
+			buildPhases = (
+			);
+			buildToolPath = make;
+			dependencies = (
+			);
+			name = Clean;
+			passBuildSettingsInEnvironment = 1;
+			productName = Clean;
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXNativeTarget section */
+		3CCEBF861C6CB0D70086A0C5 /* Index */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3CCEBF9D1C6CB0D70086A0C5 /* Build configuration list for PBXNativeTarget "Index" */;
+			buildPhases = (
+				3CCEBF851C6CB0D70086A0C5 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Index;
+			productName = Index;
+			productReference = 3CCEBF871C6CB0D70086A0C5 /* Index */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3CCEBF7C1C6CB0D60086A0C5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0430;
+			};
+			buildConfigurationList = 3CCEBF7F1C6CB0D60086A0C5 /* Build configuration list for PBXProject "ADC_SERIAL_PrintOutSensorValue" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 3CCEBF7A1C6CB0D60086A0C5;
+			productRefGroup = 3CCEBF881C6CB0D70086A0C5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3CCEBF811C6CB0D70086A0C5 /* All */,
+				3CCEBF821C6CB0D70086A0C5 /* Build */,
+				3CCEBF831C6CB0D70086A0C5 /* Upload */,
+				3CCEBF841C6CB0D70086A0C5 /* Clean */,
+				3CCEBF861C6CB0D70086A0C5 /* Index */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3CCEBF851C6CB0D70086A0C5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3CCEBF8C1C6CB0D70086A0C5 /* main.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		3CCEBF8F1C6CB0D70086A0C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1,",
+					"__AVR_ATmega8__,",
+					"F_CPU=1000000",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"/usr/local/CrossPack-AVR/include",
+					.,
+					"/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/include",
+					"/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/include-fixed",
+					"/usr/local/CrossPack-AVR-20131216/avr/include",
+				);
+				PATH = "$(PATH):$(PROJECT_DIR)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		3CCEBF901C6CB0D70086A0C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"__AVR_ATmega8__,",
+					"F_CPU=1000000",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"/usr/local/CrossPack-AVR/include",
+					.,
+					"/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/include",
+					"/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/include-fixed",
+					"/usr/local/CrossPack-AVR-20131216/avr/include",
+				);
+				PATH = "$(PATH):$(PROJECT_DIR)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		3CCEBF921C6CB0D70086A0C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		3CCEBF931C6CB0D70086A0C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		3CCEBF951C6CB0D70086A0C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		3CCEBF961C6CB0D70086A0C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		3CCEBF981C6CB0D70086A0C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		3CCEBF991C6CB0D70086A0C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		3CCEBF9B1C6CB0D70086A0C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		3CCEBF9C1C6CB0D70086A0C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		3CCEBF9E1C6CB0D70086A0C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		3CCEBF9F1C6CB0D70086A0C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3CCEBF7F1C6CB0D60086A0C5 /* Build configuration list for PBXProject "ADC_SERIAL_PrintOutSensorValue" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CCEBF8F1C6CB0D70086A0C5 /* Debug */,
+				3CCEBF901C6CB0D70086A0C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3CCEBF911C6CB0D70086A0C5 /* Build configuration list for PBXLegacyTarget "All" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CCEBF921C6CB0D70086A0C5 /* Debug */,
+				3CCEBF931C6CB0D70086A0C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		3CCEBF941C6CB0D70086A0C5 /* Build configuration list for PBXLegacyTarget "Build" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CCEBF951C6CB0D70086A0C5 /* Debug */,
+				3CCEBF961C6CB0D70086A0C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		3CCEBF971C6CB0D70086A0C5 /* Build configuration list for PBXLegacyTarget "Upload" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CCEBF981C6CB0D70086A0C5 /* Debug */,
+				3CCEBF991C6CB0D70086A0C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		3CCEBF9A1C6CB0D70086A0C5 /* Build configuration list for PBXLegacyTarget "Clean" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CCEBF9B1C6CB0D70086A0C5 /* Debug */,
+				3CCEBF9C1C6CB0D70086A0C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		3CCEBF9D1C6CB0D70086A0C5 /* Build configuration list for PBXNativeTarget "Index" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CCEBF9E1C6CB0D70086A0C5 /* Debug */,
+				3CCEBF9F1C6CB0D70086A0C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3CCEBF7C1C6CB0D60086A0C5 /* Project object */;
+}
