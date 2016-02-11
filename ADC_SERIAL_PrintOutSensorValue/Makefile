@@ -48,7 +48,7 @@ MCU = atmega8
 #     processor frequency. You can then use this symbol in your source code to 
 #     calculate timings. Do NOT tack on a 'UL' at the end, this will be done
 #     automatically to create a 32-bit value in your source code.
-F_CPU = 1000000
+F_CPU = 8000000
 
 AVRDUDE_PROGRAMMER = avrisp
 
@@ -225,7 +225,7 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(OBJDIR)/$(TARGET).hex
 # to submit bug reports.
 #AVRDUDE_VERBOSE = -v -v
 
-AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
+AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) -b 19200
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
@@ -485,6 +485,12 @@ $(OBJDIR)/%.o : %.S
 # Create preprocessed source for use in sending a bug report.
 $(OBJDIR)/%.i : %.c
 	$(CC) -E -mmcu=$(MCU) -I. $(CFLAGS) $< -o $@ 
+    
+
+# Dissamble Test
+disassemble: elf
+	avr-objdump -s -j .fuse $(wildcard *.elf)
+	avr-objdump -C -d $(wildcard *.elf) 2>&1
 
 
 # Target: clean project.
