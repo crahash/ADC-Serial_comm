@@ -1,0 +1,299 @@
+   1               		.file	"uart.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 104               	.global	__vector_11
+ 106               	__vector_11:
+   1:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** /* Les caractères saisis par Hyperterminal sont renvoyés en écho ou affichés sur le LCD
+   2:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****  *
+   3:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****  * 03/2005 Florian Schaeffer
+   4:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****  */
+   5:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+   6:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** #include <avr/interrupt.h>
+   7:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+   8:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** #define UART_BAUD_RATE 9600
+   9:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  10:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** #define UART_BAUD_CALC(UART_BAUD_RATE,F_CPU) ((F_CPU)/((UART_BAUD_RATE)*16L)-1)
+  11:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  12:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** #define RBUFFLEN 40 // longueur du tampon de réception sérielle
+  13:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  14:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** volatile unsigned char rbuff[RBUFFLEN];		// tampon circulaire
+  15:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** volatile uint8_t rbuffpos,	// prochaine position a lire dans le tampon circulaire
+  16:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 			rbuffcnt,	// nombre de caracteres a lire dane le tampon
+  17:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 			udr_data;	// données de l'UART (volatile, 
+  18:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****                         // pour eviter l'optimisation par le preprocesseur)
+  19:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  20:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** // Routine d'interruption, lit les caracteres de l'UART
+  21:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** ISR (USART_RXC_vect) 		
+  22:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** {
+ 108               	.LM0:
+ 109               	.LFBB1:
+ 110 0000 1F92      		push r1
+ 111 0002 0F92      		push r0
+ 112 0004 0FB6      		in r0,__SREG__
+ 113 0006 0F92      		push r0
+ 114 0008 1124      		clr __zero_reg__
+ 115 000a 2F93      		push r18
+ 116 000c 5F93      		push r21
+ 117 000e 6F93      		push r22
+ 118 0010 7F93      		push r23
+ 119 0012 8F93      		push r24
+ 120 0014 9F93      		push r25
+ 121 0016 AF93      		push r26
+ 122 0018 BF93      		push r27
+ 123 001a EF93      		push r30
+ 124 001c FF93      		push r31
+ 125               	/* prologue: Signal */
+ 126               	/* frame size = 0 */
+ 127               	/* stack size = 13 */
+ 128               	.L__stack_usage = 13
+  23:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	udr_data= UDR; 		// toujours lire un octet, sinon interruption sans fin
+ 130               	.LM1:
+ 131 001e 8CB1      		in r24,0xc
+ 132 0020 8093 0000 		sts udr_data,r24
+  24:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****     
+  25:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	// ne pas ecrire de caractere dans un tampon circulaire plein
+  26:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	if(rbuffcnt < RBUFFLEN) rbuff[(rbuffpos+rbuffcnt++) % RBUFFLEN] = udr_data;	
+ 134               	.LM2:
+ 135 0024 8091 0000 		lds r24,rbuffcnt
+ 136 0028 8832      		cpi r24,lo8(40)
+ 137 002a 00F4      		brsh .L1
+ 139               	.LM3:
+ 140 002c 2091 0000 		lds r18,rbuffpos
+ 141 0030 8091 0000 		lds r24,rbuffcnt
+ 142 0034 91E0      		ldi r25,lo8(1)
+ 143 0036 980F      		add r25,r24
+ 144 0038 9093 0000 		sts rbuffcnt,r25
+ 145 003c 90E0      		ldi r25,0
+ 146 003e 820F      		add r24,r18
+ 147 0040 911D      		adc r25,__zero_reg__
+ 148 0042 68E2      		ldi r22,lo8(40)
+ 149 0044 70E0      		ldi r23,0
+ 150 0046 00D0      		rcall __divmodhi4
+ 151 0048 2091 0000 		lds r18,udr_data
+ 152 004c 8050      		subi r24,lo8(-(rbuff))
+ 153 004e 9040      		sbci r25,hi8(-(rbuff))
+ 154 0050 FC01      		movw r30,r24
+ 155 0052 2083      		st Z,r18
+ 156               	.L1:
+ 157               	/* epilogue start */
+  27:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	// quelle position ? caractere lu + nombre caracteres MODULO longueur tampon 
+  28:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	// (recommencer de zero quand la fin est atteinte)
+  29:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** }
+ 159               	.LM4:
+ 160 0054 FF91      		pop r31
+ 161 0056 EF91      		pop r30
+ 162 0058 BF91      		pop r27
+ 163 005a AF91      		pop r26
+ 164 005c 9F91      		pop r25
+ 165 005e 8F91      		pop r24
+ 166 0060 7F91      		pop r23
+ 167 0062 6F91      		pop r22
+ 168 0064 5F91      		pop r21
+ 169 0066 2F91      		pop r18
+ 170 0068 0F90      		pop r0
+ 171 006a 0FBE      		out __SREG__,r0
+ 172 006c 0F90      		pop r0
+ 173 006e 1F90      		pop r1
+ 174 0070 1895      		reti
+ 176               	.Lscope1:
+ 178               	.global	ser_getc
+ 180               	ser_getc:
+  30:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  31:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  32:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** unsigned char ser_getc (void)		
+  33:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** {
+ 182               	.LM5:
+ 183               	.LFBB2:
+ 184               	/* prologue: function */
+ 185               	/* frame size = 0 */
+ 186               	/* stack size = 0 */
+ 187               	.L__stack_usage = 0
+ 188               	.L6:
+  34:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	unsigned char c;
+  35:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  36:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	while(!rbuffcnt); 	// attend un caractere disponible 
+ 190               	.LM6:
+ 191 0072 8091 0000 		lds r24,rbuffcnt
+ 192 0076 8823      		tst r24
+ 193 0078 01F0      		breq .L6
+  37:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	
+  38:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	cli();	// Suspendre interruptions. 
+ 195               	.LM7:
+ 196               	/* #APP */
+ 197               	 ;  38 "/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_
+ 198 007a F894      		cli
+ 199               	 ;  0 "" 2
+  39:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 		
+  40:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	rbuffcnt--;		// un caractere de moins a afficher
+ 201               	.LM8:
+ 202               	/* #NOAPP */
+ 203 007c 8091 0000 		lds r24,rbuffcnt
+ 204 0080 8150      		subi r24,lo8(-(-1))
+ 205 0082 8093 0000 		sts rbuffcnt,r24
+  41:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	c = rbuff[rbuffpos++];	// aller chercher le caractere pret a etre lu
+ 207               	.LM9:
+ 208 0086 E091 0000 		lds r30,rbuffpos
+ 209 008a 81E0      		ldi r24,lo8(1)
+ 210 008c 8E0F      		add r24,r30
+ 211 008e 8093 0000 		sts rbuffpos,r24
+ 212 0092 F0E0      		ldi r31,0
+ 213 0094 E050      		subi r30,lo8(-(rbuff))
+ 214 0096 F040      		sbci r31,hi8(-(rbuff))
+ 215 0098 8081      		ld r24,Z
+  42:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	if (rbuffpos >= RBUFFLEN)  rbuffpos = 0;	
+ 217               	.LM10:
+ 218 009a 9091 0000 		lds r25,rbuffpos
+ 219 009e 9832      		cpi r25,lo8(40)
+ 220 00a0 00F0      		brlo .L7
+ 222               	.LM11:
+ 223 00a2 1092 0000 		sts rbuffpos,__zero_reg__
+ 224               	.L7:
+  43:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 		// dernier caractere lu (a droite du tampon), recommencer du debut
+  44:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  45:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	sei();			// re-activer les interruptions
+ 226               	.LM12:
+ 227               	/* #APP */
+ 228               	 ;  45 "/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_
+ 229 00a6 7894      		sei
+ 230               	 ;  0 "" 2
+  46:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  47:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	return (c);		// renvoyer le caractère
+  48:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** }
+ 232               	.LM13:
+ 233               	/* #NOAPP */
+ 234 00a8 0895      		ret
+ 239               	.Lscope2:
+ 242               	.global	uart_putc
+ 244               	uart_putc:
+  49:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  50:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** // Emettre un caractere 
+  51:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** void uart_putc(unsigned char c)
+  52:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** {
+ 246               	.LM14:
+ 247               	.LFBB3:
+ 248               	/* prologue: function */
+ 249               	/* frame size = 0 */
+ 250               	/* stack size = 0 */
+ 251               	.L__stack_usage = 0
+ 252               	.L10:
+  53:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****     while(!(UCSRA & (1 << UDRE)));  // attend UDR pret 
+ 254               	.LM15:
+ 255 00aa 5D9B      		sbis 0xb,5
+ 256 00ac 00C0      		rjmp .L10
+  54:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****     UDR = c;  				// emet  caractere
+ 258               	.LM16:
+ 259 00ae 8CB9      		out 0xc,r24
+ 260 00b0 0895      		ret
+ 262               	.Lscope3:
+ 265               	.global	uart_puts
+ 267               	uart_puts:
+  55:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** }
+  56:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  57:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** // Emission d'une chaine
+  58:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** void uart_puts (char *s)
+  59:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** {
+ 269               	.LM17:
+ 270               	.LFBB4:
+ 271 00b2 CF93      		push r28
+ 272 00b4 DF93      		push r29
+ 273               	/* prologue: function */
+ 274               	/* frame size = 0 */
+ 275               	/* stack size = 2 */
+ 276               	.L__stack_usage = 2
+ 277 00b6 EC01      		movw r28,r24
+ 278               	.L12:
+  60:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****     while (*s)
+ 280               	.LM18:
+ 281 00b8 8991      		ld r24,Y+
+ 282 00ba 8823      		tst r24
+ 283 00bc 01F0      		breq .L14
+  61:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****     {   // tant que longueur *s != NULL 
+  62:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****         uart_putc(*s);
+ 285               	.LM19:
+ 286 00be 00D0      		rcall uart_putc
+ 287 00c0 00C0      		rjmp .L12
+ 288               	.L14:
+ 289               	/* epilogue start */
+  63:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****         s++;
+  64:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c ****     }
+  65:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** }
+ 291               	.LM20:
+ 292 00c2 DF91      		pop r29
+ 293 00c4 CF91      		pop r28
+ 294 00c6 0895      		ret
+ 296               	.Lscope4:
+ 298               	.global	uart_init
+ 300               	uart_init:
+  66:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  67:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** //  initialiser USART
+  68:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** void uart_init(void)
+  69:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** {
+ 302               	.LM21:
+ 303               	.LFBB5:
+ 304               	/* prologue: function */
+ 305               	/* frame size = 0 */
+ 306               	/* stack size = 0 */
+ 307               	.L__stack_usage = 0
+  70:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	sei();	// activer interruptions 
+ 309               	.LM22:
+ 310               	/* #APP */
+ 311               	 ;  70 "/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_
+ 312 00c8 7894      		sei
+ 313               	 ;  0 "" 2
+  71:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 
+  72:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	UCSRB |= (1 << TXEN);			// activer UART TX (emission)
+ 315               	.LM23:
+ 316               	/* #NOAPP */
+ 317 00ca 539A      		sbi 0xa,3
+  73:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	UCSRB |= (1 << RXEN );			// activer UART RX (reception) 
+ 319               	.LM24:
+ 320 00cc 549A      		sbi 0xa,4
+  74:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	UCSRB |= (1 << RXCIE);			// activer interruption sur données entrantes
+ 322               	.LM25:
+ 323 00ce 579A      		sbi 0xa,7
+  75:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	UCSRC |= (1<<URSEL)|(3<<UCSZ0);	// asynchrone, 8N1
+ 325               	.LM26:
+ 326 00d0 80B5      		in r24,0x20
+ 327 00d2 8668      		ori r24,lo8(-122)
+ 328 00d4 80BD      		out 0x20,r24
+  76:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	UBRRH=(uint8_t)(UART_BAUD_CALC(UART_BAUD_RATE,F_CPU)>>8);	// choix debit
+ 330               	.LM27:
+ 331 00d6 10BC      		out 0x20,__zero_reg__
+  77:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/uart.c **** 	UBRRL=(uint8_t)UART_BAUD_CALC(UART_BAUD_RATE,F_CPU);
+ 333               	.LM28:
+ 334 00d8 83E3      		ldi r24,lo8(51)
+ 335 00da 89B9      		out 0x9,r24
+ 336 00dc 0895      		ret
+ 338               	.Lscope5:
+ 339               		.comm	udr_data,1,1
+ 340               		.comm	rbuffcnt,1,1
+ 341               		.comm	rbuffpos,1,1
+ 342               		.comm	rbuff,40,1
+ 348               	.Letext0:
+ 349               		.ident	"GCC: (GNU) 4.8.1"
+ 350               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:00000000 uart.c
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//ccgFvnBC.s:2      *ABS*:0000003e __SP_H__
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//ccgFvnBC.s:3      *ABS*:0000003d __SP_L__
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//ccgFvnBC.s:4      *ABS*:0000003f __SREG__
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//ccgFvnBC.s:5      *ABS*:00000000 __tmp_reg__
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//ccgFvnBC.s:6      *ABS*:00000001 __zero_reg__
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//ccgFvnBC.s:106    .text:00000000 __vector_11
+                            *COM*:00000001 udr_data
+                            *COM*:00000001 rbuffcnt
+                            *COM*:00000001 rbuffpos
+                            *COM*:00000028 rbuff
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//ccgFvnBC.s:180    .text:00000072 ser_getc
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//ccgFvnBC.s:244    .text:000000aa uart_putc
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//ccgFvnBC.s:267    .text:000000b2 uart_puts
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//ccgFvnBC.s:300    .text:000000c8 uart_init
+
+UNDEFINED SYMBOLS
+__divmodhi4
+__do_clear_bss

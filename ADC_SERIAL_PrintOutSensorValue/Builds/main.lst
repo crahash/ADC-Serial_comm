@@ -1,0 +1,849 @@
+   1               		.file	"main.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 118               	.global	initIO
+ 120               	initIO:
+   1:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #include <stdio.h>
+   2:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #include <avr/io.h>
+   3:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #include <avr/interrupt.h>
+   4:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #include <util/delay.h>
+   5:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #include <stdlib.h>
+   6:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #include "uart.h"
+   7:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+   8:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define EN_SENSOR_PORT_DIR          DDRC
+   9:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define EN_SENSOR_STATE             PORTC
+  10:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define EN_SENSOR_PIN               PC0
+  11:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  12:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define SENSOR_PORT_DIR             DDRC
+  13:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define SENSOR_STATE                PORTC
+  14:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define SENSOR_PIN                  PC4     // ADC4
+  15:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  16:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define LED1_PORT_DIR               DDRC
+  17:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define LED1_STATE                  PORTC
+  18:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define LED1_PIN                    PC1
+  19:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  20:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define LED2_PORT_DIR               DDRC
+  21:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define LED2_STATE                  PORTC
+  22:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** #define LED2_PIN                    PC2
+  23:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  24:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  25:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** volatile uint16_t ADC_result[100];
+  26:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** volatile uint8_t ADC_result_index=0;
+  27:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  28:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** volatile uint8_t Timer0_trigger=0;
+  29:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  30:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** volatile uint8_t Timer0_res=0;
+  31:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** volatile uint8_t Timer0_prevRes=0;
+  32:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  33:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** volatile uint8_t timer0_ovflag_cnt = 0;
+  34:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  35:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** void initIO(void) {
+ 122               	.LM0:
+ 123               	.LFBB1:
+ 124               	/* prologue: function */
+ 125               	/* frame size = 0 */
+ 126               	/* stack size = 0 */
+ 127               	.L__stack_usage = 0
+  36:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 	LED1_PORT_DIR |= (1 << LED1_PIN);  // 1 : sortie
+ 129               	.LM1:
+ 130 0000 A19A      		sbi 0x14,1
+  37:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 	LED2_PORT_DIR |= (1 << LED2_PIN);  // 1 : sortie
+ 132               	.LM2:
+ 133 0002 A29A      		sbi 0x14,2
+  38:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     
+  39:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     LED1_STATE |= (1 << LED1_PIN);        // 1 : OFF
+ 135               	.LM3:
+ 136 0004 A99A      		sbi 0x15,1
+  40:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     LED2_STATE |= (1 << LED2_PIN);        // 1 : OFF
+ 138               	.LM4:
+ 139 0006 AA9A      		sbi 0x15,2
+  41:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     
+  42:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     EN_SENSOR_PORT_DIR |= (1 << EN_SENSOR_PIN);   // 1 : sortie
+ 141               	.LM5:
+ 142 0008 A09A      		sbi 0x14,0
+  43:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     EN_SENSOR_STATE |= (1 << EN_SENSOR_PIN);      // 1 : OFF	
+ 144               	.LM6:
+ 145 000a A89A      		sbi 0x15,0
+ 146 000c 0895      		ret
+ 148               	.Lscope1:
+ 150               	.global	__vector_9
+ 152               	__vector_9:
+  44:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+  45:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  46:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //-----------------------------------------------------------------------
+  47:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //                              ADC config
+  48:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //-----------------------------------------------------------------------
+  49:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  50:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** inline void initADC(void){
+  51:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADMUX |= (1 << REFS0) | (1 << REFS1) | (1 << MUX2); // internal ref : 2.56V and ADC4 input sele
+  52:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     //ADCSRA |= (1 << ADPS1); // ADPS2 = 0 ; ADPS1 = 1 ; ADPS0 = 0 : prescaler = 4 ==> Fcan = 250kh
+  53:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADCSRA |= (1 << ADFR);  // Free Running mode
+  54:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADCSRA |= (1 << ADIE);    // Enable ADC interrupt
+  55:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+  56:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  57:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** inline void startADCconversion(void){
+  58:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADCSRA |= (1 << ADEN); // enable ADC
+  59:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADCSRA |= (1 << ADSC); // Start conversion
+  60:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+  61:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  62:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** inline void stopADCconversion(void){
+  63:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADCSRA &=~ (1<<ADEN); //stop ADC
+  64:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+  65:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  66:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //-----------------------------------------------------------------------
+  67:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //                            Compter0 config
+  68:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //-----------------------------------------------------------------------
+  69:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  70:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** inline void startCOMPTER0(void){
+  71:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     TCCR0 |= (1<<CS00); //prescaler = 1 Ftimer = 1Mhz
+  72:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     TCNT0 = 0x00;       //clear compter
+  73:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+  74:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** inline void stopCOMPTER0(void){
+  75:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     TCCR0 &=~  (1<<CS00) | (1<<CS01) | (1<<CS02);
+  76:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+  77:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  78:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  79:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //-----------------------------------------------------------------------
+  80:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //                            Timer0 config
+  81:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //-----------------------------------------------------------------------
+  82:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  83:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** inline void startTimer0(void){
+  84:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     TCNT0 = 254; // config timer0 pour compter 54us
+  85:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     TIMSK |= (1<<TOIE0); // enable interrupt
+  86:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     TCCR0 = 0x01; //prescaler = 1 :: Ftimer = 1Mhz
+  87:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     sei();
+  88:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+  89:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  90:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** inline void stopTimer0(void){
+  91:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     timer0_ovflag_cnt = 0;
+  92:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     TIMSK &=~ (1<<TOIE0); // disable interrupt
+  93:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     TCCR0 &=~  (1<<CS00) | (1<<CS01) | (1<<CS02);
+  94:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+  95:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+  96:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //-----------------------------------------------------------------------
+  97:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //                            Sensor config
+  98:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** //-----------------------------------------------------------------------
+  99:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+ 100:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** inline void enableSensor(void){
+ 101:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     EN_SENSOR_STATE &=~ (1 << EN_SENSOR_PIN); // 0 : ON
+ 102:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+ 103:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+ 104:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** inline void disableSensor(void){
+ 105:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     EN_SENSOR_STATE |= (1 << EN_SENSOR_PIN); // 1 : OFF
+ 106:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+ 107:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+ 108:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** ISR(TIMER0_OVF_vect){
+ 154               	.LM7:
+ 155               	.LFBB2:
+ 156 000e 1F92      		push r1
+ 157 0010 0F92      		push r0
+ 158 0012 0FB6      		in r0,__SREG__
+ 159 0014 0F92      		push r0
+ 160 0016 1124      		clr __zero_reg__
+ 161 0018 8F93      		push r24
+ 162               	/* prologue: Signal */
+ 163               	/* frame size = 0 */
+ 164               	/* stack size = 4 */
+ 165               	.L__stack_usage = 4
+ 166               	.LBB16:
+ 167               	.LBB17:
+  91:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     timer0_ovflag_cnt = 0;
+ 169               	.LM8:
+ 170 001a 1092 0000 		sts timer0_ovflag_cnt,__zero_reg__
+  92:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     TIMSK &=~ (1<<TOIE0); // disable interrupt
+ 172               	.LM9:
+ 173 001e 89B7      		in r24,0x39
+ 174 0020 8E7F      		andi r24,lo8(-2)
+ 175 0022 89BF      		out 0x39,r24
+  93:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     TCCR0 &=~  (1<<CS00) | (1<<CS01) | (1<<CS02);
+ 177               	.LM10:
+ 178 0024 83B7      		in r24,0x33
+ 179 0026 8E7F      		andi r24,lo8(-2)
+ 180 0028 83BF      		out 0x33,r24
+ 181               	/* epilogue start */
+ 182               	.LBE17:
+ 183               	.LBE16:
+ 109:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+ 110:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     stopTimer0();
+ 111:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+ 185               	.LM11:
+ 186 002a 8F91      		pop r24
+ 187 002c 0F90      		pop r0
+ 188 002e 0FBE      		out __SREG__,r0
+ 189 0030 0F90      		pop r0
+ 190 0032 1F90      		pop r1
+ 191 0034 1895      		reti
+ 193               	.Lscope2:
+ 195               	.global	__vector_14
+ 197               	__vector_14:
+ 112:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+ 113:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+ 114:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** ISR (ADC_vect){
+ 199               	.LM12:
+ 200               	.LFBB3:
+ 201 0036 1F92      		push r1
+ 202 0038 0F92      		push r0
+ 203 003a 0FB6      		in r0,__SREG__
+ 204 003c 0F92      		push r0
+ 205 003e 1124      		clr __zero_reg__
+ 206 0040 8F93      		push r24
+ 207 0042 9F93      		push r25
+ 208 0044 EF93      		push r30
+ 209 0046 FF93      		push r31
+ 210               	/* prologue: Signal */
+ 211               	/* frame size = 0 */
+ 212               	/* stack size = 7 */
+ 213               	.L__stack_usage = 7
+ 115:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     
+ 116:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADC_result[ADC_result_index] = ADCW; //store result
+ 215               	.LM13:
+ 216 0048 E091 0000 		lds r30,ADC_result_index
+ 217 004c F0E0      		ldi r31,0
+ 218 004e 84B1      		in r24,0x4
+ 219 0050 95B1      		in r25,0x4+1
+ 220 0052 EE0F      		lsl r30
+ 221 0054 FF1F      		rol r31
+ 222 0056 E050      		subi r30,lo8(-(ADC_result))
+ 223 0058 F040      		sbci r31,hi8(-(ADC_result))
+ 224 005a 9183      		std Z+1,r25
+ 225 005c 8083      		st Z,r24
+ 117:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADC_result_index++;
+ 227               	.LM14:
+ 228 005e 8091 0000 		lds r24,ADC_result_index
+ 229 0062 8F5F      		subi r24,lo8(-(1))
+ 230 0064 8093 0000 		sts ADC_result_index,r24
+ 231               	/* epilogue start */
+ 118:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+ 119:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+ 233               	.LM15:
+ 234 0068 FF91      		pop r31
+ 235 006a EF91      		pop r30
+ 236 006c 9F91      		pop r25
+ 237 006e 8F91      		pop r24
+ 238 0070 0F90      		pop r0
+ 239 0072 0FBE      		out __SREG__,r0
+ 240 0074 0F90      		pop r0
+ 241 0076 1F90      		pop r1
+ 242 0078 1895      		reti
+ 244               	.Lscope3:
+ 245               		.section	.text.startup,"ax",@progbits
+ 247               	.global	main
+ 249               	main:
+ 120:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 
+ 121:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** int main(void) {
+ 251               	.LM16:
+ 252               	.LFBB4:
+ 253 0000 CF93      		push r28
+ 254 0002 DF93      		push r29
+ 255 0004 CDB7      		in r28,__SP_L__
+ 256 0006 DEB7      		in r29,__SP_H__
+ 257 0008 2A97      		sbiw r28,10
+ 258 000a 0FB6      		in __tmp_reg__,__SREG__
+ 259 000c F894      		cli
+ 260 000e DEBF      		out __SP_H__,r29
+ 261 0010 0FBE      		out __SREG__,__tmp_reg__
+ 262 0012 CDBF      		out __SP_L__,r28
+ 263               	/* prologue: function */
+ 264               	/* frame size = 10 */
+ 265               	/* stack size = 12 */
+ 266               	.L__stack_usage = 12
+ 122:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 	
+ 123:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     initIO();
+ 268               	.LM17:
+ 269 0014 00D0      		rcall initIO
+ 270               	.LBB18:
+ 271               	.LBB19:
+  51:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADMUX |= (1 << REFS0) | (1 << REFS1) | (1 << MUX2); // internal ref : 2.56V and ADC4 input sele
+ 273               	.LM18:
+ 274 0016 87B1      		in r24,0x7
+ 275 0018 846C      		ori r24,lo8(-60)
+ 276 001a 87B9      		out 0x7,r24
+  53:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADCSRA |= (1 << ADFR);  // Free Running mode
+ 278               	.LM19:
+ 279 001c 359A      		sbi 0x6,5
+  54:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADCSRA |= (1 << ADIE);    // Enable ADC interrupt
+ 281               	.LM20:
+ 282 001e 339A      		sbi 0x6,3
+ 283               	.LBE19:
+ 284               	.LBE18:
+ 124:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     initADC();
+ 125:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     uart_init();
+ 286               	.LM21:
+ 287 0020 00D0      		rcall uart_init
+ 288               	.LBB20:
+ 289               	.LBB21:
+ 101:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     EN_SENSOR_STATE &=~ (1 << EN_SENSOR_PIN); // 0 : ON
+ 291               	.LM22:
+ 292 0022 A898      		cbi 0x15,0
+ 293               	.LBE21:
+ 294               	.LBE20:
+ 295               	.LBB22:
+ 296               	.LBB23:
+  58:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADCSRA |= (1 << ADEN); // enable ADC
+ 298               	.LM23:
+ 299 0024 379A      		sbi 0x6,7
+  59:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADCSRA |= (1 << ADSC); // Start conversion
+ 301               	.LM24:
+ 302 0026 369A      		sbi 0x6,6
+ 303               	.L6:
+ 304               	.LBE23:
+ 305               	.LBE22:
+ 126:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     
+ 127:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     enableSensor();
+ 128:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     startADCconversion();
+ 129:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     
+ 130:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     while (ADC_result_index<100) {
+ 307               	.LM25:
+ 308 0028 8091 0000 		lds r24,ADC_result_index
+ 309 002c 8436      		cpi r24,lo8(100)
+ 310 002e 00F0      		brlo .L6
+ 311               	.LBB24:
+ 312               	.LBB25:
+  63:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADCSRA &=~ (1<<ADEN); //stop ADC
+ 314               	.LM26:
+ 315 0030 3798      		cbi 0x6,7
+ 316               	.LBE25:
+ 317               	.LBE24:
+ 131:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 	}
+ 132:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     stopADCconversion();
+ 133:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     ADC_result_index = 0;
+ 319               	.LM27:
+ 320 0032 1092 0000 		sts ADC_result_index,__zero_reg__
+ 321               	.L7:
+ 134:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     char buffer[10];
+ 135:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     while (ADC_result_index<100) {
+ 323               	.LM28:
+ 324 0036 8091 0000 		lds r24,ADC_result_index
+ 325 003a 8436      		cpi r24,lo8(100)
+ 326 003c 00F4      		brsh .L10
+ 136:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****         uart_puts(itoa(ADC_result[ADC_result_index], buffer, 10));
+ 328               	.LM29:
+ 329 003e E091 0000 		lds r30,ADC_result_index
+ 330 0042 F0E0      		ldi r31,0
+ 331 0044 EE0F      		lsl r30
+ 332 0046 FF1F      		rol r31
+ 333 0048 E050      		subi r30,lo8(-(ADC_result))
+ 334 004a F040      		sbci r31,hi8(-(ADC_result))
+ 335 004c 8081      		ld r24,Z
+ 336 004e 9181      		ldd r25,Z+1
+ 337               	.LBB26:
+ 338               	.LBB27:
+ 340               	.Ltext1:
+   1:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Copyright (c) 2004,2007 Joerg Wunsch
+   3:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+   4:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Portions of documentation Copyright (c) 1990, 1991, 1993, 1994
+   5:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The Regents of the University of California.
+   6:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+   7:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    All rights reserved.
+   8:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+   9:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Redistribution and use in source and binary forms, with or without
+  10:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    modification, are permitted provided that the following conditions are met:
+  11:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  12:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    * Redistributions of source code must retain the above copyright
+  13:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      notice, this list of conditions and the following disclaimer.
+  14:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  15:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    * Redistributions in binary form must reproduce the above copyright
+  16:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      notice, this list of conditions and the following disclaimer in
+  17:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      the documentation and/or other materials provided with the
+  18:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      distribution.
+  19:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  20:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    * Neither the name of the copyright holders nor the names of
+  21:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      contributors may be used to endorse or promote products derived
+  22:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      from this software without specific prior written permission.
+  23:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  24:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  25:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  26:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  27:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  28:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  29:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  30:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  31:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  32:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  33:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  34:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   POSSIBILITY OF SUCH DAMAGE.
+  35:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  36:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   $Id$
+  37:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+  38:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  39:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef _STDLIB_H_
+  40:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define	_STDLIB_H_ 1
+  41:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  42:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ASSEMBLER__
+  43:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  44:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define __need_NULL
+  45:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define __need_size_t
+  46:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define __need_wchar_t
+  47:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #include <stddef.h>
+  48:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  49:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ptr_t
+  50:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define __ptr_t void *
+  51:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  52:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  53:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifdef __cplusplus
+  54:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern "C" {
+  55:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  56:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  57:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** \file */
+  58:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  59:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** \defgroup avr_stdlib <stdlib.h>: General utilities
+  60:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \code #include <stdlib.h> \endcode
+  61:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  62:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     This file declares some basic C macros and functions as
+  63:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     defined by the ISO standard, plus some AVR-specific extensions.
+  64:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+  65:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  66:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /*@{*/
+  67:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** Result type for function div(). */
+  68:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** typedef struct {
+  69:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	int quot;                   /**< The Quotient. */
+  70:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	int rem;                    /**< The Remainder. */
+  71:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** } div_t;
+  72:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  73:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** Result type for function ldiv(). */
+  74:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** typedef struct {
+  75:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	long quot;                  /**< The Quotient. */
+  76:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	long rem;                   /**< The Remainder. */
+  77:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** } ldiv_t;
+  78:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  79:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** Comparision function type for qsort(), just for convenience. */
+  80:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** typedef int (*__compar_fn_t)(const void *, const void *);
+  81:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  82:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __DOXYGEN__
+  83:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  84:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ATTR_CONST__
+  85:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # define __ATTR_CONST__ __attribute__((__const__))
+  86:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  87:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  88:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ATTR_MALLOC__
+  89:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # define __ATTR_MALLOC__ __attribute__((__malloc__))
+  90:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  91:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  92:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ATTR_NORETURN__
+  93:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # define __ATTR_NORETURN__ __attribute__((__noreturn__))
+  94:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  95:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  96:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ATTR_PURE__
+  97:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # define __ATTR_PURE__ __attribute__((__pure__))
+  98:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  99:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 100:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef	__ATTR_GNU_INLINE__
+ 101:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # ifdef  __GNUC_STDC_INLINE__
+ 102:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #  define __ATTR_GNU_INLINE__   __attribute__((__gnu_inline__))
+ 103:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # else
+ 104:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #  define __ATTR_GNU_INLINE__
+ 105:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # endif
+ 106:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+ 107:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 108:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+ 109:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 110:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** The abort() function causes abnormal program termination to occur.
+ 111:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     This realization disables interrupts and jumps to _exit() function
+ 112:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     with argument equal to 1. In the limited AVR environment, execution is
+ 113:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     effectively halted by entering an infinite loop. */
+ 114:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void abort(void) __ATTR_NORETURN__;
+ 115:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 116:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** The abs() function computes the absolute value of the integer \c i.
+ 117:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \note The abs() and labs() functions are builtins of gcc.
+ 118:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 119:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern int abs(int __i) __ATTR_CONST__;
+ 120:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __DOXYGEN__
+ 121:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define	abs(__i) __builtin_abs(__i)
+ 122:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+ 123:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 124:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** The labs() function computes the absolute value of the long integer
+ 125:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \c i.
+ 126:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \note The abs() and labs() functions are builtins of gcc.
+ 127:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 128:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern long labs(long __i) __ATTR_CONST__;
+ 129:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __DOXYGEN__
+ 130:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define labs(__i) __builtin_labs(__i)
+ 131:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+ 132:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 133:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 134:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The bsearch() function searches an array of \c nmemb objects, the
+ 135:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      initial member of which is pointed to by \c base, for a member
+ 136:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      that matches the object pointed to by \c key.  The size of each
+ 137:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      member of the array is specified by \c size.
+ 138:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 139:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The contents of the array should be in ascending sorted order
+ 140:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      according to the comparison function referenced by \c compar.
+ 141:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The \c compar routine is expected to have two arguments which
+ 142:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      point to the key object and to an array member, in that order,
+ 143:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      and should return an integer less than, equal to, or greater than
+ 144:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      zero if the key object is found, respectively, to be less than,
+ 145:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      to match, or be greater than the array member.
+ 146:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 147:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The bsearch() function returns a pointer to a matching member of
+ 148:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      the array, or a null pointer if no match is found.  If two
+ 149:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      members compare as equal, which member is matched is unspecified.
+ 150:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 151:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void *bsearch(const void *__key, const void *__base, size_t __nmemb,
+ 152:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 		     size_t __size, int (*__compar)(const void *, const void *));
+ 153:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 154:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /* __divmodhi4 and __divmodsi4 from libgcc.a */
+ 155:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 156:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The div() function computes the value \c num/denom and returns
+ 157:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      the quotient and remainder in a structure named \c div_t that
+ 158:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      contains two int members named \c quot and \c rem.
+ 159:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 160:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern div_t div(int __num, int __denom) __asm__("__divmodhi4") __ATTR_CONST__;
+ 161:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 162:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The ldiv() function computes the value \c num/denom and returns
+ 163:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      the quotient and remainder in a structure named \c ldiv_t that
+ 164:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      contains two long integer members named \c quot and \c rem.
+ 165:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 166:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern ldiv_t ldiv(long __num, long __denom) __asm__("__divmodsi4") __ATTR_CONST__;
+ 167:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 168:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 169:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The qsort() function is a modified partition-exchange sort, or
+ 170:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      quicksort.
+ 171:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 172:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The qsort() function sorts an array of \c nmemb objects, the
+ 173:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      initial member of which is pointed to by \c base.  The size of
+ 174:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      each object is specified by \c size.  The contents of the array
+ 175:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      base are sorted in ascending order according to a comparison
+ 176:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      function pointed to by \c compar, which requires two arguments
+ 177:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      pointing to the objects being compared.
+ 178:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 179:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The comparison function must return an integer less than, equal
+ 180:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      to, or greater than zero if the first argument is considered to
+ 181:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      be respectively less than, equal to, or greater than the second.
+ 182:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 183:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void qsort(void *__base, size_t __nmemb, size_t __size,
+ 184:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 		  __compar_fn_t __compar);
+ 185:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 186:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 187:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The strtol() function converts the string in \c nptr to a long
+ 188:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     value.  The conversion is done according to the given base, which
+ 189:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     must be between 2 and 36 inclusive, or be the special value 0.
+ 190:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 191:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The string may begin with an arbitrary amount of white space (as
+ 192:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     determined by isspace()) followed by a single optional \c '+' or \c '-'
+ 193:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     sign.  If \c base is zero or 16, the string may then include a
+ 194:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \c "0x" prefix, and the number will be read in base 16; otherwise,
+ 195:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     a zero base is taken as 10 (decimal) unless the next character is
+ 196:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \c '0', in which case it is taken as 8 (octal).
+ 197:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 198:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The remainder of the string is converted to a long value in the
+ 199:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     obvious manner, stopping at the first character which is not a
+ 200:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     valid digit in the given base.  (In bases above 10, the letter \c 'A'
+ 201:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     in either upper or lower case represents 10, \c 'B' represents 11,
+ 202:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     and so forth, with \c 'Z' representing 35.)
+ 203:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 204:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     If \c endptr is not NULL, strtol() stores the address of the first
+ 205:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     invalid character in \c *endptr.  If there were no digits at all,
+ 206:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     however, strtol() stores the original value of \c nptr in \c
+ 207:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     *endptr.  (Thus, if \c *nptr is not \c '\\0' but \c **endptr is \c '\\0'
+ 208:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     on return, the entire string was valid.)
+ 209:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 210:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The strtol() function returns the result of the conversion, unless
+ 211:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     the value would underflow or overflow.  If no conversion could be
+ 212:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     performed, 0 is returned.  If an overflow or underflow occurs, \c
+ 213:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     errno is set to \ref avr_errno "ERANGE" and the function return value
+ 214:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     is clamped to \c LONG_MIN or \c LONG_MAX, respectively.
+ 215:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 216:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern long strtol(const char *__nptr, char **__endptr, int __base);
+ 217:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 218:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 219:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The strtoul() function converts the string in \c nptr to an
+ 220:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     unsigned long value.  The conversion is done according to the
+ 221:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     given base, which must be between 2 and 36 inclusive, or be the
+ 222:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     special value 0.
+ 223:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 224:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The string may begin with an arbitrary amount of white space (as
+ 225:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     determined by isspace()) followed by a single optional \c '+' or \c '-'
+ 226:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     sign.  If \c base is zero or 16, the string may then include a
+ 227:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \c "0x" prefix, and the number will be read in base 16; otherwise,
+ 228:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     a zero base is taken as 10 (decimal) unless the next character is
+ 229:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \c '0', in which case it is taken as 8 (octal).
+ 230:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 231:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The remainder of the string is converted to an unsigned long value
+ 232:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     in the obvious manner, stopping at the first character which is
+ 233:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     not a valid digit in the given base.  (In bases above 10, the
+ 234:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     letter \c 'A' in either upper or lower case represents 10, \c 'B'
+ 235:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     represents 11, and so forth, with \c 'Z' representing 35.)
+ 236:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 237:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     If \c endptr is not NULL, strtoul() stores the address of the first
+ 238:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     invalid character in \c *endptr.  If there were no digits at all,
+ 239:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     however, strtoul() stores the original value of \c nptr in \c
+ 240:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     *endptr.  (Thus, if \c *nptr is not \c '\\0' but \c **endptr is \c '\\0'
+ 241:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     on return, the entire string was valid.)
+ 242:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 243:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The strtoul() function return either the result of the conversion
+ 244:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     or, if there was a leading minus sign, the negation of the result
+ 245:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     of the conversion, unless the original (non-negated) value would
+ 246:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     overflow; in the latter case, strtoul() returns ULONG_MAX, and \c
+ 247:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     errno is set to \ref avr_errno "ERANGE".  If no conversion could 
+ 248:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     be performed, 0 is returned.
+ 249:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 250:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern unsigned long strtoul(const char *__nptr, char **__endptr, int __base);
+ 251:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 252:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 253:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The atol() function converts the initial portion of the string
+ 254:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     pointed to by \p s to long integer representation. In contrast to
+ 255:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 256:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****         \code strtol(s, (char **)NULL, 10); \endcode
+ 257:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 258:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     this function does not detect overflow (\c errno is not changed and
+ 259:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     the result value is not predictable), uses smaller memory (flash and
+ 260:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     stack) and works more quickly.
+ 261:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 262:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern long atol(const char *__s) __ATTR_PURE__;
+ 263:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 264:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 265:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The atoi() function converts the initial portion of the string
+ 266:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     pointed to by \p s to integer representation. In contrast to
+ 267:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 268:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****         \code (int)strtol(s, (char **)NULL, 10); \endcode
+ 269:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 270:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     this function does not detect overflow (\c errno is not changed and
+ 271:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     the result value is not predictable), uses smaller memory (flash and
+ 272:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     stack) and works more quickly.
+ 273:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 274:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern int atoi(const char *__s) __ATTR_PURE__;
+ 275:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 276:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 277:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The exit() function terminates the application.  Since there is no
+ 278:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    environment to return to, \c status is ignored, and code execution
+ 279:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    will eventually reach an infinite loop, thereby effectively halting
+ 280:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    all code processing.  Before entering the infinite loop, interrupts
+ 281:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    are globally disabled.
+ 282:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 283:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    In a C++ context, global destructors will be called before halting
+ 284:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    execution.
+ 285:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 286:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void exit(int __status) __ATTR_NORETURN__;
+ 287:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 288:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 289:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The malloc() function allocates \c size bytes of memory.
+ 290:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    If malloc() fails, a NULL pointer is returned.
+ 291:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 292:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Note that malloc() does \e not initialize the returned memory to
+ 293:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    zero bytes.
+ 294:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 295:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    See the chapter about \ref malloc "malloc() usage" for implementation
+ 296:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    details.
+ 297:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 298:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void *malloc(size_t __size) __ATTR_MALLOC__;
+ 299:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 300:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 301:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The free() function causes the allocated memory referenced by \c
+ 302:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    ptr to be made available for future allocations.  If \c ptr is
+ 303:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    NULL, no action occurs.
+ 304:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 305:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void free(void *__ptr);
+ 306:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 307:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 308:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \c malloc() \ref malloc_tunables "tunable".
+ 309:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 310:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern size_t __malloc_margin;
+ 311:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 312:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 313:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \c malloc() \ref malloc_tunables "tunable".
+ 314:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 315:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern char *__malloc_heap_start;
+ 316:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 317:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 318:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \c malloc() \ref malloc_tunables "tunable".
+ 319:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 320:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern char *__malloc_heap_end;
+ 321:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 322:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 323:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Allocate \c nele elements of \c size each.  Identical to calling
+ 324:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \c malloc() using <tt>nele * size</tt> as argument, except the
+ 325:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    allocated memory will be cleared to zero.
+ 326:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 327:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void *calloc(size_t __nele, size_t __size) __ATTR_MALLOC__;
+ 328:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 329:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 330:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The realloc() function tries to change the size of the region
+ 331:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    allocated at \c ptr to the new \c size value.  It returns a
+ 332:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    pointer to the new region.  The returned pointer might be the
+ 333:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    same as the old pointer, or a pointer to a completely different
+ 334:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    region.
+ 335:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 336:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The contents of the returned region up to either the old or the new
+ 337:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    size value (whatever is less) will be identical to the contents of
+ 338:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    the old region, even in case a new region had to be allocated.
+ 339:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 340:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    It is acceptable to pass \c ptr as NULL, in which case realloc()
+ 341:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    will behave identical to malloc().
+ 342:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 343:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    If the new memory cannot be allocated, realloc() returns NULL, and
+ 344:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    the region at \c ptr will not be changed.
+ 345:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 346:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void *realloc(void *__ptr, size_t __size) __ATTR_MALLOC__;
+ 347:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 348:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern double strtod(const char *__nptr, char **__endptr);
+ 349:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 350:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern double atof(const char *__nptr);
+ 351:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 352:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** Highest number that can be generated by rand(). */
+ 353:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define	RAND_MAX 0x7FFF
+ 354:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 355:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 356:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The rand() function computes a sequence of pseudo-random integers in the
+ 357:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      range of 0 to \c RAND_MAX (as defined by the header file <stdlib.h>).
+ 358:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 359:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The srand() function sets its argument \c seed as the seed for a new
+ 360:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      sequence of pseudo-random numbers to be returned by rand().  These
+ 361:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      sequences are repeatable by calling srand() with the same seed value.
+ 362:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 363:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      If no seed value is provided, the functions are automatically seeded with
+ 364:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      a value of 1.
+ 365:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 366:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      In compliance with the C standard, these functions operate on
+ 367:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      \c int arguments.  Since the underlying algorithm already uses
+ 368:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      32-bit calculations, this causes a loss of precision.  See
+ 369:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      \c random() for an alternate set of functions that retains full
+ 370:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      32-bit precision.
+ 371:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 372:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern int rand(void);
+ 373:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 374:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Pseudo-random number generator seeding; see rand().
+ 375:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 376:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void srand(unsigned int __seed);
+ 377:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 378:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 379:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Variant of rand() that stores the context in the user-supplied
+ 380:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    variable located at \c ctx instead of a static library variable
+ 381:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    so the function becomes re-entrant.
+ 382:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 383:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern int rand_r(unsigned long *__ctx);
+ 384:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /*@}*/
+ 385:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 386:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /*@{*/
+ 387:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** \name Non-standard (i.e. non-ISO C) functions.
+ 388:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****  \ingroup avr_stdlib
+ 389:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 390:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 391:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \brief Convert an integer to a string.
+ 392:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 393:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The function itoa() converts the integer value from \c val into an
+ 394:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    ASCII representation that will be stored under \c s.  The caller
+ 395:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    is responsible for providing sufficient storage in \c s.
+ 396:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 397:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \note The minimal size of the buffer \c s depends on the choice of
+ 398:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    radix. For example, if the radix is 2 (binary), you need to supply a buffer
+ 399:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    with a minimal length of 8 * sizeof (int) + 1 characters, i.e. one
+ 400:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    character for each bit plus one for the string terminator. Using a larger
+ 401:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    radix will require a smaller minimal buffer size.
+ 402:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 403:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \warning If the buffer is too small, you risk a buffer overflow.
+ 404:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 405:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Conversion is done using the \c radix as base, which may be a
+ 406:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    number between 2 (binary conversion) and up to 36.  If \c radix
+ 407:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    is greater than 10, the next digit after \c '9' will be the letter
+ 408:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \c 'a'.
+ 409:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     
+ 410:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     If radix is 10 and val is negative, a minus sign will be prepended.
+ 411:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 412:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The itoa() function returns the pointer passed as \c s.
+ 413:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 414:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifdef  __DOXYGEN__
+ 415:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern char *itoa(int val, char *s, int radix);
+ 416:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #else
+ 417:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern __inline__ __ATTR_GNU_INLINE__
+ 418:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** char *itoa (int __val, char *__s, int __radix)
+ 419:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** {
+ 420:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     if (!__builtin_constant_p (__radix)) {
+ 421:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	extern char *__itoa (int, char *, int);
+ 422:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	return __itoa (__val, __s, __radix);
+ 423:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     } else if (__radix < 2 || __radix > 36) {
+ 424:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	*__s = 0;
+ 425:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	return __s;
+ 426:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     } else {
+ 427:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	extern char *__itoa_ncheck (int, char *, unsigned char);
+ 428:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	return __itoa_ncheck (__val, __s, __radix);
+ 342               	.LM30:
+ 343 0050 4AE0      		ldi r20,lo8(10)
+ 344 0052 BE01      		movw r22,r28
+ 345 0054 6F5F      		subi r22,-1
+ 346 0056 7F4F      		sbci r23,-1
+ 347 0058 00D0      		rcall __itoa_ncheck
+ 348               	.LBE27:
+ 349               	.LBE26:
+ 351               	.Ltext2:
+ 353               	.LM31:
+ 354 005a 00D0      		rcall uart_puts
+ 137:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****         uart_putc('\n');
+ 356               	.LM32:
+ 357 005c 8AE0      		ldi r24,lo8(10)
+ 358 005e 00D0      		rcall uart_putc
+ 138:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****         ADC_result_index++;
+ 360               	.LM33:
+ 361 0060 8091 0000 		lds r24,ADC_result_index
+ 362 0064 8F5F      		subi r24,lo8(-(1))
+ 363 0066 8093 0000 		sts ADC_result_index,r24
+ 364 006a 00C0      		rjmp .L7
+ 365               	.L10:
+ 139:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     }
+ 140:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c ****     
+ 141:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** 	return 0; // never reached
+ 142:/Users/crh/Documents/Electronique/AVR programmes/ADC_SERIAL_PrintOutSensorValue/ADC_SERIAL_PrintOutSensorValue/main.c **** }
+ 367               	.LM34:
+ 368 006c 80E0      		ldi r24,0
+ 369 006e 90E0      		ldi r25,0
+ 370               	/* epilogue start */
+ 371 0070 2A96      		adiw r28,10
+ 372 0072 0FB6      		in __tmp_reg__,__SREG__
+ 373 0074 F894      		cli
+ 374 0076 DEBF      		out __SP_H__,r29
+ 375 0078 0FBE      		out __SREG__,__tmp_reg__
+ 376 007a CDBF      		out __SP_L__,r28
+ 377 007c DF91      		pop r29
+ 378 007e CF91      		pop r28
+ 379 0080 0895      		ret
+ 384               	.Lscope4:
+ 385               	.global	timer0_ovflag_cnt
+ 386               		.section .bss
+ 389               	timer0_ovflag_cnt:
+ 390 0000 00        		.zero	1
+ 391               	.global	Timer0_prevRes
+ 394               	Timer0_prevRes:
+ 395 0001 00        		.zero	1
+ 396               	.global	Timer0_res
+ 399               	Timer0_res:
+ 400 0002 00        		.zero	1
+ 401               	.global	Timer0_trigger
+ 404               	Timer0_trigger:
+ 405 0003 00        		.zero	1
+ 406               	.global	ADC_result_index
+ 409               	ADC_result_index:
+ 410 0004 00        		.zero	1
+ 411               		.comm	ADC_result,200,1
+ 418               		.text
+ 420               	.Letext0:
+ 421               		.ident	"GCC: (GNU) 4.8.1"
+ 422               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:2      *ABS*:0000003e __SP_H__
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:3      *ABS*:0000003d __SP_L__
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:4      *ABS*:0000003f __SREG__
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:5      *ABS*:00000000 __tmp_reg__
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:6      *ABS*:00000001 __zero_reg__
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:120    .text:00000000 initIO
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:152    .text:0000000e __vector_9
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:389    .bss:00000000 timer0_ovflag_cnt
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:197    .text:00000036 __vector_14
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:409    .bss:00000004 ADC_result_index
+                            *COM*:000000c8 ADC_result
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:249    .text.startup:00000000 main
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:394    .bss:00000001 Timer0_prevRes
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:399    .bss:00000002 Timer0_res
+/var/folders/cf/tmmmwphx3md3rjphqtc_7c1c0000gn/T//cc0SUgm8.s:404    .bss:00000003 Timer0_trigger
+
+UNDEFINED SYMBOLS
+uart_init
+__itoa_ncheck
+uart_puts
+uart_putc
+__do_clear_bss
